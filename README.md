@@ -4,6 +4,8 @@ Messages are logged in SQL.
 
 Empty sql tables are included so you can easily upload them.
 
+Uses Bootstrap and Jquery
+
 ##Set Up
 - Add you SQL username/password and your Twilio information in sql.php.
 - Upload the empty sql database or individual tables.
