@@ -1,0 +1,208 @@
+<!--LogOutButton-->
+<a class = 'center-block text-center' id='logoutlink'> Logout</a>
+<!-- Text Phonenumbers -->
+<div class="container">
+	<div class="row">
+		<div class="col-lg-1"></div>
+		<div class="col-lg-10">
+		<h2 class="text-center text-primary">Send Text Message</h2>
+		<p><label><input type="checkbox" id="checkAll"/> Check all</label></p>
+		<div class="row">
+			<div class="col-lg-4">
+				<?php
+					$phonenumberarray = getPhoneNumberArray();
+					$firstend = ceil(count($phonenumberarray)/3);
+					$secondend = ceil(count($phonenumberarray)/3 + $firstend);
+					//echo $firstend . " " . $secondend . "<br>";
+					for($x=0;$x<$firstend; $x++){
+						echo "<div class='checkbox'>";
+						echo "<label><input type='checkbox' value='" . $phonenumberarray[$x]['Phone_Number'] . "'>" .$phonenumberarray[$x]['First_Name'] . " " . $phonenumberarray[$x]['Last_Name'] . " " . $phonenumberarray[$x]['Phone_Number'] . "</label>";
+						echo "</div>";
+					}
+				?> 
+			</div>
+			<div class="col-lg-4">
+				<?php
+					if(count($phonenumberarray)>1){
+						for($x=$firstend;$x<$secondend; $x++){
+							echo "<div class='checkbox'>";
+							echo "<label><input type='checkbox' value='" . $phonenumberarray[$x]['Phone_Number'] . "'>" .$phonenumberarray[$x]['First_Name'] . " " . $phonenumberarray[$x]['Last_Name'] . " " . $phonenumberarray[$x]['Phone_Number'] . "</label>";
+							echo "</div>";
+						}
+					}
+				?>
+			</div>
+			<div class="col-lg-4">
+				<?php
+					if(count($phonenumberarray)>2){
+						for($x=$secondend;$x<count($phonenumberarray); $x++){
+							echo "<div class='checkbox'>";
+							echo "<label><input type='checkbox' value='" . $phonenumberarray[$x]['Phone_Number'] . "'>" .$phonenumberarray[$x]['First_Name'] . " " . $phonenumberarray[$x]['Last_Name'] . " " . $phonenumberarray[$x]['Phone_Number'] . "</label>";
+							echo "</div>";
+						}
+					}
+				?>
+			</div>
+		</div>
+			<br>
+			<div class="form-group">
+			  <label for="message">Message:</label>
+			  <textarea class="form-control" rows="5" id="message" maxlength='159'></textarea>
+			</div>
+			<br>
+			<button type="button" class="btn btn-primary btn-lg center-block" id='send_message_button'>Send Message</button>
+		</div>
+		<div class="col-lg-1"></div>
+	</div>
+</div>
+<br>
+<hr>
+<div class="container">
+	<div class="row">
+		<div class="col-lg-6">
+		<h2 class="text-center text-primary">Add Number</h2>
+		<!-- Add Phone Number -->
+			<label for="first_name">First Name:</label><input class="form-control" type='text' id='first_name' name='first_name'></input>
+			<label for="last_name">Last Name:</label><input class="form-control" type='text' id='last_name' name='last_name'></input>
+			<label for="phone_number">Phone Number:</label>
+			<input  class="form-control" type='text' id='phone_number' name='phone_number'></input>		
+			<br>
+			<button type="button" class="btn btn-success btn-lg center-block" id='add_number_button'>Add</button>
+		</div>
+		<div class="col-lg-6">
+		<h2 class="text-center text-primary">Delete Number</h2>
+		<!-- Delete Phone Number -->
+			<div class="form-group">
+			  <label for="delete">Select Person to Delete:</label>
+			  <select class="form-control" id="delete">
+				<?php
+				$numberarray = getPhoneNumberArray();
+				foreach($numberarray as $person){
+					echo "<option value='" . $person['ID'] . "'>" .$person['First_Name'] . " " . $person['Last_Name'] . " " . $person['Phone_Number'] . "</option>";
+				}
+				?>
+			</select>
+			</div>
+			<br>
+			<button type="button" class="btn btn-danger btn-lg center-block" id='delete_number_button'>Delete</button>
+		</div>
+	</div>
+</div>
+
+
+
+<script>
+console.log("Loading Main Page");
+$( "#add_number_button" ).click(function() {
+	console.log("Add Number Button Pushed");
+   if($("#first_name").val() == ""){
+	   $("#notification").html('<div class="alert alert-danger">You must enter your first name. </div>');
+   }
+   else if($("#last_name").val()== ""){
+	  	$("#notification").html('<div class="alert alert-danger">You must enter your last name. </div>');
+
+   }
+   else if($("#phone_number").val() == ""){
+	   	$("#notification").html('<div class="alert alert-danger">You must enter your phone number. </div>');
+
+   }
+   else{
+	    console.log("Validation Complete ");
+		sendAjax({
+			first_name: $("#first_name").val(),
+			last_name: $("#last_name").val(),
+			phone_number: $("#phone_number").val().replace(/\D/g, ''),
+			method: "addnumber"
+		});	 
+   }
+});
+</script>
+<script>
+$( "#delete_number_button" ).click(function() {
+	console.log("Delete Number Button Pushed");
+	var $sel = $("#delete");
+	var value = $sel.val();
+	var text = $("option:selected",$sel).text();
+   if($("#delete").val() == ""){
+	   $("#notification").html('<div class="alert alert-danger">You must select a name. </div>');
+   }
+   else{
+		var selectid = $("#delete").val();
+	    console.log("Validation Complete. Delete ID: " + $("#delete").val() + " " + text);
+		sendAjax({
+			ID: selectid,
+			Name: text,
+			method: "deletenumber"
+		});	 
+   }
+});
+</script>
+<script>
+$( "#send_message_button" ).click(function() {
+	//Get checkboxes
+	console.log("Send Message Button Pushed");
+	  var phonenumberIDs = $('input:checked').map(function(){
+      return $(this).val();
+    });
+	//Get message
+	var message = $("#message").val();
+	console.log(phonenumberIDs);
+	if(phonenumberIDs.size() < 1){
+		 $("#notification").html('<div class="alert alert-danger">You must select some people to send a message to. </div>');
+	}else if(message == ''){
+		$("#notification").html('<div class="alert alert-danger">You must write a message first. </div>');
+	}
+   else{
+		console.log("Validation Complete. Send Text ID: " + phonenumberIDs.get() + " " + message);
+		sendAjax({
+			PhoneNumbers: phonenumberIDs.get(),
+			Message: message,
+			method: "sendtext"
+		});	 
+   }
+});
+</script>
+<script>
+$( "#logoutlink" ).click(function() {
+		console.log("Logout Link Clicked");
+		sendAjax({
+			method: "logout"
+		});
+		window.location.href = "index.php"; //Refresh the page to show they are logged out.
+});
+</script>
+<script>
+function sendAjax(dataarray){
+	$.post("backend.php",dataarray,
+		function(data, status){
+			console.log(data.status + " " + data.message + " " + status);
+			if(status != 'success'){
+				//Means there was an issue even reaching backend.php
+				$("#notification").html('<div class="alert alert-danger">' + status + '.</div>');
+			}else{
+				//Check whether we were able to add the phone number or not.
+				if(data.status == true){
+					$("#notification").html('<div class="alert alert-success">' + data.message + '.</div>');
+				}else{
+					$("#notification").html('<div class="alert alert-danger">' + data.message + '.</div>');
+				}
+			}
+		});
+}
+</script>
+<script>
+$("#checkAll").change(function () {
+    $("input:checkbox").prop('checked', $(this).prop("checked"));
+});
+</script>
+<?php
+include('sql.php');
+function getPhoneNumberArray(){
+	global $conn;
+	$stmt=$conn->prepare("SELECT * FROM phonenumbers ORDER BY Last_Name ASC");
+	if(!$stmt->execute()){
+		echo "Error";
+		setNotificationMessage('alert alert-danger',$stmt->errorInfo()[2]);
+	}
+	return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
