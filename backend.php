@@ -55,7 +55,7 @@ if(isset($_POST['method']) && $_POST['method'] == 'addnumber'){
 	$finalresult = null;
 	$phonenumberarray = $_POST['PhoneNumbers'];
 	$message = $_POST['Message'];
-	if($phonenumberarray[0] == 'on') $phonenumberarray = array_shift($phonenumberarray); //Gets rid of the 'on' from the check all checkbox
+	if($phonenumberarray[0] == 'on') array_shift($phonenumberarray); //Gets rid of the 'on' from the check all checkbox
 	foreach($phonenumberarray as $phonenumber){
 		$result = sendText($phonenumber,$_POST['Message']);
 		if($result !== true) $finalresult.="--" . $result;
